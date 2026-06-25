@@ -21,7 +21,12 @@ from app.i18n import I18nMiddleware, get_translations, get_lang
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-Base.metadata.create_all(bind=engine)
+# Defer table creation until first request
+@app.on_event("startup")
+def startup():
+    from app.database import engine
+    from app.models import Base
+    Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FarmGate-UG Pro", description="Connecting Farmers & Buyers Globally")
 
@@ -775,3 +780,4 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "Internal Server Error. Please try again later."}
     )
+
