@@ -774,10 +774,18 @@ async def robots():
 Allow: /
 Sitemap: https://farmgate.ug/sitemap.xml"""
 
+# Defer table creation until first request
+@app.on_event("startup")
+def startup():
+    from app.database import engine
+    from app.models import Base
+    Base.metadata.create_all(bind=engine)
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal Server Error. Please try again later."}
     )
+
 
