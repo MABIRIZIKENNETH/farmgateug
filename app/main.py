@@ -21,32 +21,7 @@ from app.i18n import I18nMiddleware, get_translations, get_lang
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
-# Defer table creation until first request
-@app.on_event("startup")
-def startup():
-    from app.database import engine
-    from app.models import Base
-    
-
 app = FastAPI(title="FarmGate-UG Pro", description="Connecting Farmers & Buyers Globally")
-# Defer table creation until first request
-@app.on_event("startup")
-def startup():
-    from app.database import engine
-    from app.models import Base
-    Base.metadata.create_all(bind=engine)
-# Defer table creation until first request
-@app.on_event("startup")
-def startup():
-    from app.database import engine
-    from app.models import Base
-    
-# Defer table creation until first request
-@app.on_event("startup")
-def startup():
-    from app.database import engine
-    from app.models import Base
-    
 
 # Add i18n middleware
 app.add_middleware(I18nMiddleware)
@@ -117,6 +92,13 @@ DISTRICTS = sorted([
     "Nkomo", "Mbarara", "Kiruhura", "Isingiro", "Rwampara", "Ntungamo", "Mitooma",
     "Rukungiri", "Kanungu", "Kisoro", "Rubanda", "Rukiga", "Kabale"
 ])
+
+# ---- Startup event (deferred table creation) ----
+@app.on_event("startup")
+def startup():
+    from app.database import engine
+    from app.models import Base
+    Base.metadata.create_all(bind=engine)
 
 # ---------- AUTH ----------
 @app.post("/api/auth/register", response_model=dict)
@@ -792,21 +774,9 @@ async def robots():
 Allow: /
 Sitemap: https://farmgate.ug/sitemap.xml"""
 
-# Defer table creation until first request
-@app.on_event("startup")
-def startup():
-    from app.database import engine
-    from app.models import Base
-    
-
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal Server Error. Please try again later."}
     )
-
-
-
-
-

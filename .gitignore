@@ -32,3 +32,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# PDF / large files
+*.pdf
+*.zip
+*.tar.gz
+*.7z
