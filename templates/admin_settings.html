@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="{{ lang(request) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Admin Settings') }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>.lang-select { background: #0a3322; color: white; border: 1px solid #5a9e42; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.875rem; }</style>
+</head>
+<body class="bg-[#f0f8ec]">
+    <nav class="bg-[#0a3322] text-white p-4 flex justify-between border-b-4 border-[#5a9e42]">
+        <span class="text-xl font-bold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span> - Settings</span>
+        <div class="flex items-center gap-4">
+            <a href="/admin-dashboard" class="text-white hover:text-[#a8d68c] mr-4"><i class="fas fa-arrow-left"></i> {{ _('Dashboard') }}</a>
+            <select onchange="window.location='/set-language/'+this.value" class="lang-select">
+                <option value="en" {% if lang(request) == 'en' %}selected{% endif %}>English</option>
+                <option value="lg" {% if lang(request) == 'lg' %}selected{% endif %}>Luganda</option>
+            </select>
+            <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-full text-sm">{{ _('Logout') }}</button>
+        </div>
+    </nav>
+    <div class="max-w-7xl mx-auto p-6">
+        <h1 class="text-2xl font-bold">{{ _('Site Settings') }}</h1>
+        <div class="mt-4 bg-white p-4 rounded-2xl shadow">
+            <div class="flex border-b mb-4 flex-wrap">
+                <button class="tab-btn active px-4 py-2 font-semibold text-[#0a3322] border-b-2 border-[#5a9e42]" data-tab="hero">{{ _('Hero') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="about">{{ _('About') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="cta">{{ _('Call to Action') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="features">{{ _('Features') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="gallery">{{ _('Gallery') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="footer">{{ _('Footer') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="whatsapp">{{ _('WhatsApp') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="dashboard">{{ _('Dashboards') }}</button>
+                <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-[#0a3322]" data-tab="media">{{ _('Media') }}</button>
+            </div>
+            <div id="tab-content" class="mt-4"></div>
+        </div>
+    </div>
+    <script>
+        const token = localStorage.getItem('token'); if(!token) window.location.href='/login';
+        const user = JSON.parse(localStorage.getItem('user')); if(user.role!=='admin') window.location.href='/login';
+        let currentTab = 'hero'; let settings = {};
+        async function apiFetch(url, opts={}){ opts.headers=opts.headers||{}; opts.headers['Authorization']=`Bearer ${token}`; opts.headers['Content-Type']='application/json'; const res=await fetch(url,opts); if(res.status===401){localStorage.clear();window.location.href='/login';} return res; }
+        async function loadSettings(){ const res=await apiFetch('/api/admin/settings'); settings=await res.json(); renderTab(currentTab); }
+        function renderTab(tab){ currentTab=tab; const container=document.getElementById('tab-content'); let html='';
+            if(tab==='hero'){
+                html=`<h3 class="text-lg font-bold">{{ _('Hero Section') }}</h3><div class="mt-2 space-y-3">
+                    <label>{{ _('Title') }}</label><input type="text" id="hero_title" value="${settings.hero_title||'FarmGate.ug'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Subtitle') }}</label><input type="text" id="hero_subtitle" value="${settings.hero_subtitle||'Connect directly with farmers. No middlemen.'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('CTA Button Text') }}</label><input type="text" id="hero_cta" value="${settings.hero_cta||'Get Started – Free'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Background Image URL') }}</label><input type="text" id="hero_background_image" value="${settings.hero_background_image||'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1600&h=800&fit=crop'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Background Video URL (MP4) - overrides image') }}</label><input type="text" id="hero_background_video" value="${settings.hero_background_video||''}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Video Embed Code (YouTube/Vimeo iframe) - appears below hero') }}</label><textarea id="hero_video_embed" rows="3" class="w-full border rounded-xl px-4 py-2">${settings.hero_video_embed||''}</textarea>
+                    <button onclick="saveSettings(['hero_title','hero_subtitle','hero_cta','hero_background_image','hero_background_video','hero_video_embed'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save Hero') }}</button>
+                </div>`;
+            } else if(tab==='about'){
+                html=`<h3 class="text-lg font-bold">{{ _('About Section') }}</h3><div class="mt-2 space-y-3">
+                    <label>{{ _('Mission Statement') }}</label><textarea id="about_text" rows="4" class="w-full border rounded-xl px-4 py-2">${settings.about_text||"FarmGate.ug is Uganda's premier digital marketplace..."}</textarea>
+                    <label>{{ _('About Image URL') }}</label><input type="text" id="about_image" value="${settings.about_image||'https://images.unsplash.com/photo-1546443310-6a8a9f4c7a8e?w=600&h=400&fit=crop'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('About Video Embed Code (optional)') }}</label><textarea id="about_video" rows="3" class="w-full border rounded-xl px-4 py-2">${settings.about_video||''}</textarea>
+                    <button onclick="saveSettings(['about_text','about_image','about_video'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save About') }}</button>
+                </div>`;
+            } else if(tab==='cta'){
+                html=`<h3 class="text-lg font-bold">{{ _('Call to Action Section') }}</h3><div class="mt-2 space-y-3">
+                    <label>{{ _('Title') }}</label><input type="text" id="cta_title" value="${settings.cta_title||'Ready to Connect?'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Subtext') }}</label><input type="text" id="cta_text" value="${settings.cta_text||'Join the fastest growing agricultural marketplace in Uganda.'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Button Text') }}</label><input type="text" id="cta_button_text" value="${settings.cta_button_text||'Register Now – Free'}" class="w-full border rounded-full px-4 py-2">
+                    <button onclick="saveSettings(['cta_title','cta_text','cta_button_text'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save CTA') }}</button>
+                </div>`;
+            } else if(tab==='features'){
+                fetch('/api/admin/features',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()).then(features=>{
+                    let fHtml=`<h3 class="text-lg font-bold">{{ _('Features') }}</h3><button onclick="addFeature()" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm mb-2">+ {{ _('Add Feature') }}</button><div id="feature-list">`;
+                    features.forEach(f=>{
+                        fHtml+=`<div class="border-b py-2 flex items-center gap-2 flex-wrap"><input type="text" value="${f.icon}" placeholder="{{ _('Icon') }}" class="border rounded-full px-2 py-1 text-sm w-20" data-field="icon" data-id="${f.id}"><input type="text" value="${f.title}" placeholder="{{ _('Title') }}" class="border rounded-full px-2 py-1 text-sm flex-1" data-field="title" data-id="${f.id}"><input type="text" value="${f.description}" placeholder="{{ _('Description') }}" class="border rounded-full px-2 py-1 text-sm flex-1" data-field="description" data-id="${f.id}"><button onclick="updateFeature(${f.id})" class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs">{{ _('Save') }}</button><button onclick="deleteFeature(${f.id})" class="bg-red-500 text-white px-2 py-1 rounded-full text-xs">X</button></div>`;
+                    });
+                    fHtml+=`</div>`;
+                    document.getElementById('tab-content').innerHTML=fHtml;
+                });
+                return;
+            } else if(tab==='gallery'){
+                fetch('/api/admin/gallery',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()).then(images=>{
+                    let gHtml=`<h3 class="text-lg font-bold">{{ _('Gallery') }}</h3><button onclick="addGalleryImage()" class="bg-green-500 text-white px-3 py-1 rounded-full text-sm mb-2">+ {{ _('Add Image') }}</button><div id="gallery-list">`;
+                    images.forEach(img=>{
+                        gHtml+=`<div class="border-b py-2 flex items-center gap-2 flex-wrap"><input type="text" value="${img.url}" placeholder="{{ _('Image URL') }}" class="border rounded-full px-2 py-1 text-sm flex-1" data-field="url" data-id="${img.id}"><input type="text" value="${img.alt||''}" placeholder="{{ _('Alt text') }}" class="border rounded-full px-2 py-1 text-sm flex-1" data-field="alt" data-id="${img.id}"><input type="number" value="${img.order||0}" placeholder="{{ _('Order') }}" class="border rounded-full px-2 py-1 text-sm w-16" data-field="order" data-id="${img.id}"><button onclick="updateGalleryImage(${img.id})" class="bg-blue-500 text-white px-2 py-1 rounded-full text-xs">{{ _('Save') }}</button><button onclick="deleteGalleryImage(${img.id})" class="bg-red-500 text-white px-2 py-1 rounded-full text-xs">X</button></div>`;
+                    });
+                    gHtml+=`</div>`;
+                    document.getElementById('tab-content').innerHTML=gHtml;
+                });
+                return;
+            } else if(tab==='footer'){
+                html=`<h3 class="text-lg font-bold">{{ _('Footer') }}</h3><div class="mt-2 space-y-3">
+                    <label>{{ _('Copyright Text') }}</label><input type="text" id="footer_copyright" value="${settings.footer_copyright||'© 2026 FarmGate.ug. All rights reserved.'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Facebook URL') }}</label><input type="text" id="footer_facebook" value="${settings.footer_facebook||'#'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Twitter URL') }}</label><input type="text" id="footer_twitter" value="${settings.footer_twitter||'#'}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Instagram URL') }}</label><input type="text" id="footer_instagram" value="${settings.footer_instagram||'#'}" class="w-full border rounded-full px-4 py-2">
+                    <button onclick="saveSettings(['footer_copyright','footer_facebook','footer_twitter','footer_instagram'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save Footer') }}</button>
+                </div>`;
+            } else if(tab==='whatsapp'){
+                html=`<h3 class="text-lg font-bold">{{ _('WhatsApp Button') }}</h3><div class="mt-2 space-y-3">
+                    <label>{{ _('WhatsApp Number') }}</label><input type="text" id="whatsapp_number" value="${settings.whatsapp_number||'+256771511410'}" class="w-full border rounded-full px-4 py-2">
+                    <button onclick="saveSettings(['whatsapp_number'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save WhatsApp') }}</button>
+                </div>`;
+            } else if(tab==='dashboard'){
+                Promise.all([
+                    fetch('/api/admin/dashboard-settings/farmer',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()),
+                    fetch('/api/admin/dashboard-settings/buyer',{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json())
+                ]).then(([farmerSettings,buyerSettings])=>{
+                    let dHtml=`<h3 class="text-lg font-bold">{{ _('Dashboard Visibility & Welcome Messages') }}</h3>
+                    <div class="mt-4"><h4 class="font-semibold">{{ _('Farmer Dashboard') }}</h4>
+                    <label>{{ _('Welcome Message') }}</label><input type="text" id="dashboard_farmer_welcome" value="${settings.dashboard_farmer_welcome||'Welcome to your farmer dashboard. Manage your products and track buyer interests.'}" class="w-full border rounded-full px-4 py-2 mb-2">`;
+                    farmerSettings.forEach(s=>{
+                        dHtml+=`<div class="flex items-center gap-4 py-1 flex-wrap"><span class="w-32">${s.section}</span><label><input type="checkbox" ${s.visible?'checked':''} onchange="updateDashboardSetting(${s.id}, this.checked)" /> {{ _('Visible') }}</label><input type="number" value="${s.order}" placeholder="{{ _('Order') }}" class="border rounded-full px-2 py-1 text-sm w-16" onchange="updateDashboardOrder(${s.id}, this.value)" /></div>`;
+                    });
+                    dHtml+=`</div><div class="mt-4"><h4 class="font-semibold">{{ _('Buyer Dashboard') }}</h4>
+                    <label>{{ _('Welcome Message') }}</label><input type="text" id="dashboard_buyer_welcome" value="${settings.dashboard_buyer_welcome||'Welcome to your buyer dashboard. Search for farmers and express interest.'}" class="w-full border rounded-full px-4 py-2 mb-2">`;
+                    buyerSettings.forEach(s=>{
+                        dHtml+=`<div class="flex items-center gap-4 py-1 flex-wrap"><span class="w-32">${s.section}</span><label><input type="checkbox" ${s.visible?'checked':''} onchange="updateDashboardSetting(${s.id}, this.checked)" /> {{ _('Visible') }}</label><input type="number" value="${s.order}" placeholder="{{ _('Order') }}" class="border rounded-full px-2 py-1 text-sm w-16" onchange="updateDashboardOrder(${s.id}, this.value)" /></div>`;
+                    });
+                    dHtml+=`</div><button onclick="saveSettings(['dashboard_farmer_welcome','dashboard_buyer_welcome'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full mt-4">{{ _('Save Welcome Messages') }}</button>`;
+                    document.getElementById('tab-content').innerHTML=dHtml;
+                });
+                return;
+            } else if(tab==='media'){
+                html=`<h3 class="text-lg font-bold">{{ _('Media Settings (Images & Videos)') }}</h3>
+                <div class="mt-2 space-y-3">
+                    <p class="text-sm text-gray-600">{{ _('Manage all image and video URLs used on the front page.') }}</p>
+                    <label>{{ _('Hero Background Image') }}</label><input type="text" id="hero_background_image" value="${settings.hero_background_image||''}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('Hero Background Video (MP4)') }}</label><input type="text" id="hero_background_video" value="${settings.hero_background_video||''}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('About Image') }}</label><input type="text" id="about_image" value="${settings.about_image||''}" class="w-full border rounded-full px-4 py-2">
+                    <label>{{ _('About Video Embed (iframe)') }}</label><textarea id="about_video" rows="3" class="w-full border rounded-xl px-4 py-2">${settings.about_video||''}</textarea>
+                    <label>{{ _('Hero Video Embed (iframe)') }}</label><textarea id="hero_video_embed" rows="3" class="w-full border rounded-xl px-4 py-2">${settings.hero_video_embed||''}</textarea>
+                    <button onclick="saveSettings(['hero_background_image','hero_background_video','about_image','about_video','hero_video_embed'])" class="bg-[#0a3322] text-white px-4 py-2 rounded-full">{{ _('Save Media') }}</button>
+                </div>`;
+            }
+            container.innerHTML=html;
+        }
+
+        async function saveSettings(keys){
+            for(let key of keys){
+                const el = document.getElementById(key);
+                if(el) await saveSetting(key, el.value);
+            }
+            alert('All settings saved!');
+            loadSettings();
+        }
+
+        async function saveSetting(key,value){ const res=await apiFetch(`/api/admin/settings/${key}`,{method:'PUT',body:JSON.stringify(value)}); if(!res.ok) alert('Error saving '+key); }
+        async function addFeature(){ const title=prompt('Title:'); if(!title)return; const desc=prompt('Description:'); const icon=prompt('Icon class:','fas fa-star'); const res=await apiFetch('/api/admin/features',{method:'POST',body:JSON.stringify({icon,title,description:desc})}); if(res.ok) loadSettings(); else alert('Error'); }
+        async function updateFeature(id){ const container=document.getElementById('feature-list'); const inputs=container.querySelectorAll(`[data-id="${id}"]`); const data={icon:inputs[0].value,title:inputs[1].value,description:inputs[2].value}; const res=await apiFetch(`/api/admin/features/${id}`,{method:'PUT',body:JSON.stringify(data)}); if(res.ok){alert('Updated!'); loadSettings();}else{alert('Error');} }
+        async function deleteFeature(id){ if(!confirm('Delete?'))return; const res=await apiFetch(`/api/admin/features/${id}`,{method:'DELETE'}); if(res.ok) loadSettings(); else alert('Error'); }
+        async function addGalleryImage(){ const url=prompt('Image URL:'); if(!url)return; const alt=prompt('Alt text:'); const res=await apiFetch('/api/admin/gallery',{method:'POST',body:JSON.stringify({url,alt})}); if(res.ok) loadSettings(); else alert('Error'); }
+        async function updateGalleryImage(id){ const container=document.getElementById('gallery-list'); const inputs=container.querySelectorAll(`[data-id="${id}"]`); const data={url:inputs[0].value,alt:inputs[1].value,order:parseInt(inputs[2].value)||0}; const res=await apiFetch(`/api/admin/gallery/${id}`,{method:'PUT',body:JSON.stringify(data)}); if(res.ok){alert('Updated!'); loadSettings();}else{alert('Error');} }
+        async function deleteGalleryImage(id){ if(!confirm('Delete?'))return; const res=await apiFetch(`/api/admin/gallery/${id}`,{method:'DELETE'}); if(res.ok) loadSettings(); else alert('Error'); }
+        async function updateDashboardSetting(id,visible){ const res=await apiFetch(`/api/admin/dashboard-settings/${id}`,{method:'PUT',body:JSON.stringify({visible})}); if(!res.ok) alert('Error'); }
+        async function updateDashboardOrder(id,order){ const res=await apiFetch(`/api/admin/dashboard-settings/${id}`,{method:'PUT',body:JSON.stringify({visible:true,order:parseInt(order)||0})}); if(!res.ok) alert('Error'); }
+
+        document.querySelectorAll('.tab-btn').forEach(btn=>{ btn.addEventListener('click',function(){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); renderTab(this.dataset.tab); }); });
+        function logout(){localStorage.clear();window.location.href='/login';}
+        loadSettings();
+    </script>
+</body>
+</html>

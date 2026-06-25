@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="{{ lang(request) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Login · FarmGate.ug') }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-[#f0f8ec] h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-3xl shadow max-w-md w-full border border-[#b8db9e]">
+        <div class="text-center">
+            <a href="/" class="text-2xl font-bold text-[#0a3322]"><span class="text-red-500">Farm</span>Gate<span class="text-[#5a9e42]">.ug</span></a>
+            <h2 class="text-lg mt-1">{{ _('Welcome Back') }}</h2>
+        </div>
+        <form id="loginForm" class="mt-6 space-y-4">
+            <div><label class="block font-medium text-sm">{{ _('Phone Number') }}</label><input type="tel" id="loginPhone" placeholder="+256..." required class="w-full border p-2 rounded-full px-4 focus:outline-none focus:border-[#5a9e42]"></div>
+            <div><label class="block font-medium text-sm">{{ _('Password') }}</label><div class="relative"><input type="password" id="loginPassword" placeholder="••••••••" required class="w-full border p-2 rounded-full px-4 pr-10 focus:outline-none focus:border-[#5a9e42]"><i class="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer" id="toggleLoginPassword"></i></div></div>
+            <button type="submit" class="w-full bg-[#0a3322] text-white py-2 rounded-full hover:bg-[#1a5535] transition font-semibold"><i class="fas fa-sign-in-alt"></i> {{ _('Login') }}</button>
+        </form>
+        <p class="text-center mt-4 text-sm">{{ _("Don't have an account?") }} <a href="/register" class="text-[#5a9e42] font-semibold">{{ _('Register') }}</a></p>
+        <div id="loginAlert" class="mt-2 hidden p-2 rounded-full text-center"></div>
+    </div>
+    <script>
+        document.getElementById('toggleLoginPassword').addEventListener('click',function(){ var i=document.getElementById('loginPassword'); if(i.type==='password'){i.type='text';this.classList.remove('fa-eye');this.classList.add('fa-eye-slash');}else{i.type='password';this.classList.remove('fa-eye-slash');this.classList.add('fa-eye');} });
+        document.getElementById('loginForm').addEventListener('submit', async function(e){ e.preventDefault(); var phone=document.getElementById('loginPhone').value.trim(); var password=document.getElementById('loginPassword').value; var alert=document.getElementById('loginAlert'); alert.classList.add('hidden'); if(!phone||!password){ alert.className='mt-2 p-2 rounded-full bg-red-100 text-red-800 text-sm'; alert.textContent='Please enter phone and password'; alert.classList.remove('hidden'); return; } try{ var res=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({username:phone,password:password})}); var data=await res.json(); if(res.ok&&data.access_token){ localStorage.setItem('token',data.access_token); localStorage.setItem('user',JSON.stringify(data.user)); var role=data.user.role; if(role==='admin') window.location.href='/admin-dashboard'; else if(role==='farmer') window.location.href='/farmer-dashboard'; else window.location.href='/buyer-dashboard'; }else{ alert.className='mt-2 p-2 rounded-full bg-red-100 text-red-800 text-sm'; alert.textContent='❌ '+(data.detail||'Invalid credentials'); alert.classList.remove('hidden'); } }catch(err){ alert.className='mt-2 p-2 rounded-full bg-red-100 text-red-800 text-sm'; alert.textContent='❌ Network error'; alert.classList.remove('hidden'); } });
+    </script>
+</body>
+</html>

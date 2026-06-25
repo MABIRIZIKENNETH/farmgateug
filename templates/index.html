@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register · FarmGate.ug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .role-btn { transition: all 0.2s; }
+        .role-btn.active { background: #0a3322; color: white; border-color: #0a3322; }
+        .role-btn:hover:not(.active) { background: #e8f5e0; }
+    </style>
+</head>
+<body class="bg-[#f0f8ec]">
+    <nav class="bg-[#0a3322] text-white p-4 flex flex-wrap justify-between border-b-4 border-[#5a9e42]">
+        <span class="text-xl font-bold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span></span>
+        <div class="flex gap-4">
+            <a href="/login" class="hover:text-[#a8d68c]">Login</a>
+            <a href="/" class="hover:text-[#a8d68c]">Home</a>
+        </div>
+    </nav>
+    <section id="register" class="max-w-2xl mx-auto p-6 bg-white rounded-3xl shadow mt-8 border border-[#b8db9e]">
+        <h2 class="text-2xl font-bold text-[#0a3322]"><i class="fas fa-user-plus text-[#5a9e42]"></i> Register</h2>
+        <form id="registerForm" class="mt-4 space-y-3">
+            <input type="text" id="full_name" placeholder="Full Name" required class="w-full border rounded-full px-4 py-2">
+            <input type="tel" id="phone" placeholder="WhatsApp Number" required class="w-full border rounded-full px-4 py-2">
+            <input type="email" id="email" placeholder="Email (optional)" class="w-full border rounded-full px-4 py-2">
+            <div class="relative">
+                <input type="password" id="password" placeholder="Password" required class="w-full border rounded-full px-4 py-2 pr-10">
+                <i class="fas fa-eye absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer hover:text-gray-700" id="toggleRegPassword"></i>
+            </div>
+            <div class="flex gap-4 mt-2">
+                <button type="button" class="role-btn active flex-1 py-2 border-2 border-[#0a3322] rounded-full" data-role="farmer" onclick="selectRole('farmer')"><i class="fas fa-tractor"></i> Farmer</button>
+                <button type="button" class="role-btn flex-1 py-2 border-2 border-gray-300 rounded-full" data-role="buyer" onclick="selectRole('buyer')"><i class="fas fa-building"></i> Buyer/Factory</button>
+            </div>
+            <input type="hidden" id="role" value="farmer">
+            <div id="farmerFields">
+                <select id="district" class="w-full border rounded-full px-4 py-2">
+                    <option value="">Select District</option>
+                    <option value="Kampala">Kampala</option>
+                    <option value="Wakiso">Wakiso</option>
+                    <option value="Mukono">Mukono</option>
+                    <option value="Jinja">Jinja</option>
+                    <option value="Mbale">Mbale</option>
+                    <option value="Gulu">Gulu</option>
+                    <option value="Mbarara">Mbarara</option>
+                    <option value="Kabale">Kabale</option>
+                    <option value="Lira">Lira</option>
+                    <option value="Soroti">Soroti</option>
+                    <option value="Fort Portal">Fort Portal</option>
+                    <option value="Arua">Arua</option>
+                    <option value="Masaka">Masaka</option>
+                    <option value="Entebbe">Entebbe</option>
+                </select>
+                <input type="text" id="subcounty" placeholder="Subcounty" class="w-full border rounded-full px-4 py-2 mt-2">
+                <input type="text" id="village" placeholder="Village" class="w-full border rounded-full px-4 py-2 mt-2">
+            </div>
+            <div id="buyerFields" style="display:none;">
+                <select id="country" class="w-full border rounded-full px-4 py-2">
+                    <option value="">Select Country</option>
+                    <option value="Uganda">Uganda</option>
+                    <option value="Kenya">Kenya</option>
+                    <option value="Tanzania">Tanzania</option>
+                    <option value="Rwanda">Rwanda</option>
+                    <option value="South Sudan">South Sudan</option>
+                    <option value="DRC">DRC</option>
+                    <option value="Nigeria">Nigeria</option>
+                    <option value="South Africa">South Africa</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="USA">USA</option>
+                    <option value="India">India</option>
+                    <option value="China">China</option>
+                    <option value="Germany">Germany</option>
+                    <option value="France">France</option>
+                    <option value="UAE">UAE</option>
+                    <option value="Egypt">Egypt</option>
+                    <option value="Ethiopia">Ethiopia</option>
+                </select>
+                <input type="text" id="company" placeholder="Company / Organization" class="w-full border rounded-full px-4 py-2 mt-2">
+            </div>
+            <button type="submit" class="bg-[#0a3322] text-white px-6 py-2 rounded-full hover:bg-[#1a5535] w-full">Register</button>
+        </form>
+        <div id="registerAlert" class="mt-2 hidden"></div>
+    </section>
+    <script>
+        function selectRole(role) {
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.role-btn[data-role="${role}"]`).classList.add('active');
+            document.getElementById('role').value = role;
+            if (role === 'farmer') {
+                document.getElementById('farmerFields').style.display = 'block';
+                document.getElementById('buyerFields').style.display = 'none';
+            } else {
+                document.getElementById('farmerFields').style.display = 'none';
+                document.getElementById('buyerFields').style.display = 'block';
+            }
+        }
+        document.getElementById('toggleRegPassword').addEventListener('click', function() {
+            const input = document.getElementById('password');
+            if (input.type === 'password') { input.type = 'text'; this.classList.remove('fa-eye'); this.classList.add('fa-eye-slash'); }
+            else { input.type = 'password'; this.classList.remove('fa-eye-slash'); this.classList.add('fa-eye'); }
+        });
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            const data = {
+                full_name: document.getElementById('full_name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value || null,
+                password: document.getElementById('password').value,
+                role: role
+            };
+            if (role === 'farmer') {
+                data.district = document.getElementById('district').value;
+                data.subcounty = document.getElementById('subcounty').value;
+                data.village = document.getElementById('village').value;
+            } else {
+                data.country = document.getElementById('country').value;
+                data.company = document.getElementById('company').value;
+            }
+            const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await res.json();
+            const alert = document.getElementById('registerAlert');
+            alert.classList.remove('hidden');
+            if (res.ok) {
+                alert.className = 'mt-2 p-2 rounded-full bg-green-100 text-green-800';
+                alert.textContent = '✅ ' + result.message;
+            } else {
+                alert.className = 'mt-2 p-2 rounded-full bg-red-100 text-red-800';
+                alert.textContent = '❌ ' + (result.detail || 'Error');
+            }
+        });
+    </script>
+</body>
+</html>

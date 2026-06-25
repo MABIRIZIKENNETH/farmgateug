@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="{{ lang(request) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('Buyer Dashboard') }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>.stat-card{transition:transform 0.2s;}.farmer-card{transition:all 0.2s;}.farmer-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(0,0,0,0.1);}.lang-select { background: #0a3322; color: white; border: 1px solid #5a9e42; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.875rem; }</style>
+</head>
+<body class="bg-[#f0f8ec]">
+    <nav class="bg-[#0a3322] text-white p-4 flex flex-wrap justify-between items-center border-b-4 border-[#5a9e42]">
+        <span class="text-xl font-bold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span></span>
+        <div class="flex items-center gap-4">
+            <span id="userName" class="text-sm font-medium"></span>
+            <span class="text-sm bg-[#5a9e42] px-3 py-1 rounded-full"><i class="fas fa-building"></i> {{ _('Buyer') }}</span>
+            <select onchange="window.location='/set-language/'+this.value" class="lang-select">
+                <option value="en" {% if lang(request) == 'en' %}selected{% endif %}>English</option>
+                <option value="lg" {% if lang(request) == 'lg' %}selected{% endif %}>Luganda</option>
+            </select>
+            <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-full text-sm hover:bg-red-700"><i class="fas fa-sign-out-alt"></i> {{ _('Logout') }}</button>
+        </div>
+    </nav>
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="bg-white p-4 rounded-2xl shadow mb-6 border-l-4 border-blue-500">
+            <p class="text-gray-700">{{ settings.get('dashboard_buyer_welcome', _('Welcome to your buyer dashboard. Search for farmers and express interest.')) }}</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <div class="bg-white p-4 rounded-xl shadow stat-card border-l-4 border-blue-500"><h3 class="text-sm text-gray-500"><i class="fas fa-heart text-blue-500"></i> {{ _('My Interests') }}</h3><p id="interestCount" class="text-2xl font-bold">0</p></div>
+            <div class="bg-white p-4 rounded-xl shadow stat-card border-l-4 border-yellow-500"><h3 class="text-sm text-gray-500"><i class="fas fa-star text-yellow-500"></i> {{ _('Ratings Given') }}</h3><p id="ratingCount" class="text-2xl font-bold">0</p></div>
+            <div class="bg-white p-4 rounded-xl shadow stat-card border-l-4 border-purple-500"><h3 class="text-sm text-gray-500"><i class="fas fa-bell text-purple-500"></i> {{ _('Notifications') }}</h3><p id="notifCount" class="text-2xl font-bold">0</p></div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow mt-8">
+            <h2 class="text-xl font-bold"><i class="fas fa-search"></i> {{ _('Find Farmers') }}</h2>
+            <form id="searchForm" class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <select id="searchDistrict" class="border rounded-full px-4 py-2">
+                    <option value="">{{ _('All Districts') }}</option>
+                    {% for d in districts %}
+                    <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+                <select id="searchCategory" class="border rounded-full px-4 py-2">
+                    <option value="">{{ _('All Categories') }}</option>
+                    <option value="crops">🌾 Crops</option>
+                    <option value="livestock">🐄 Livestock</option>
+                    <option value="poultry">🐔 Poultry</option>
+                    <option value="fish">🐟 Fish</option>
+                    <option value="dairy">🥛 Dairy</option>
+                    <option value="horticulture">🌿 Horticulture</option>
+                    <option value="agro-processing">🏭 Agro-processing</option>
+                </select>
+                <button type="submit" class="bg-[#0a3322] text-white px-4 py-2 rounded-full hover:bg-[#1a5535]"><i class="fas fa-search"></i> {{ _('Search') }}</button>
+            </form>
+            <div id="farmerResults" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+        <div class="mt-8"><h2 class="text-xl font-bold"><i class="fas fa-list"></i> {{ _('My Interests') }}</h2><div id="myInterestsContainer" class="mt-4 space-y-4"></div></div>
+    </div>
+    <script>
+        const token = localStorage.getItem('token'); if(!token) window.location.href='/login';
+        const user = JSON.parse(localStorage.getItem('user')); document.getElementById('userName').textContent = user.full_name;
+        async function apiFetch(url, opts={}){ opts.headers=opts.headers||{}; opts.headers['Authorization']=`Bearer ${token}`; opts.headers['Content-Type']='application/json'; const res=await fetch(url,opts); if(res.status===401){localStorage.clear();window.location.href='/login';} return res; }
+        async function loadDashboard(){ try{ const intRes=await apiFetch('/api/buyers/my-interests'); const interests=await intRes.json(); document.getElementById('interestCount').textContent=interests.length; renderMyInterests(interests); const notifRes=await apiFetch('/api/notifications'); const notifs=await notifRes.json(); document.getElementById('notifCount').textContent=notifs.length; }catch(e){console.error(e);} }
+        function renderMyInterests(interests){ const container=document.getElementById('myInterestsContainer'); if(!interests.length){ container.innerHTML='<div class="text-center py-8 text-gray-500 bg-white rounded-xl shadow"><i class="fas fa-inbox text-4xl block mb-2"></i>{{ _('No interests yet.') }}</div>'; return; } container.innerHTML=interests.map(i=>`<div class="bg-white p-4 rounded-xl shadow border"><div class="flex flex-wrap justify-between items-start"><div><strong>${i.product_name||'Product'}</strong><span class="text-sm text-gray-500">(Farmer ID: ${i.farmer_id})</span></div><span class="text-xs text-gray-400">${new Date(i.created_at).toLocaleDateString()}</span></div>${i.message?`<p class="text-gray-700 mt-1 italic">"${i.message}"</p>`:''}<div class="mt-2 flex flex-wrap gap-2"><span class="text-xs px-2 py-1 rounded-full ${i.status==='pending'?'bg-yellow-100 text-yellow-800':i.status==='contacted'?'bg-blue-100 text-blue-800':'bg-gray-100 text-gray-800'}">${i.status}</span><button onclick="rateFarmer(${i.farmer_id})" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm hover:bg-yellow-600"><i class="fas fa-star"></i> {{ _('Rate Farmer') }}</button></div></div>`).join(''); }
+        async function rateFarmer(farmerId){ const rating=prompt('Rate 1-5:'); if(!rating)return; const num=parseInt(rating); if(isNaN(num)||num<1||num>5){alert('Enter 1-5');return;} const review=prompt('Optional review:')||''; const res=await apiFetch('/api/ratings',{method:'POST',body:JSON.stringify({farmer_id:farmerId,rating:num,review})}); if(res.ok){alert('✅ Rating submitted!'); loadDashboard();}else{alert('Error');} }
+        document.getElementById('searchForm').addEventListener('submit', async function(e){ e.preventDefault(); const district=document.getElementById('searchDistrict').value; const category=document.getElementById('searchCategory').value; let url='/api/buyers/farmers?'; if(district) url+=`district=${encodeURIComponent(district)}&`; if(category) url+=`product_category=${encodeURIComponent(category)}&`; const res=await fetch(url,{headers:{'Authorization':`Bearer ${token}`}}); if(res.ok){ const farmers=await res.json(); const container=document.getElementById('farmerResults'); if(!farmers.length){ container.innerHTML='<div class="col-span-full text-center py-8 text-gray-500"><i class="fas fa-search text-4xl block mb-2"></i>{{ _('No farmers found.') }}</div>'; return; } container.innerHTML=farmers.map(f=>`<div class="bg-white p-4 rounded-xl shadow border farmer-card"><div class="flex justify-between items-start"><h3 class="font-bold">${f.full_name}</h3><span class="text-sm rating-stars">${'★'.repeat(Math.round(f.average_rating||0))}${'☆'.repeat(5-Math.round(f.average_rating||0))} <span class="text-gray-500 text-xs">(${f.total_ratings||0})</span></span></div><div class="text-sm space-y-1 mt-1"><p><i class="fas fa-map-pin text-[#5a9e42]"></i> ${f.district||'N/A'}${f.village?', '+f.village:''}</p><p><i class="fas fa-phone text-[#5a9e42]"></i> ${f.phone} <a href="https://wa.me/${f.phone.replace(/[^0-9]/g,'')}" target="_blank" class="text-green-600"><i class="fab fa-whatsapp"></i></a> <a href="tel:${f.phone}" class="text-blue-600"><i class="fas fa-phone"></i></a></p>${f.village?`<p><i class="fas fa-home text-[#5a9e42]"></i> ${f.village}</p>`:''}${f.sector_name?`<p><i class="fas fa-seedling text-[#5a9e42]"></i> ${f.sector_name}</p>`:''}</div><button onclick="showFarmerProducts(${f.id})" class="mt-2 bg-[#0a3322] text-white px-3 py-1 rounded-full text-sm hover:bg-[#1a5535]"><i class="fas fa-box"></i> {{ _('View Products') }}</button></div>`).join(''); } });
+        async function showFarmerProducts(farmerId){ const productId=prompt('Enter product ID:'); if(!productId)return; const message=prompt('Message:')||''; const res=await apiFetch('/api/buyers/interest',{method:'POST',body:JSON.stringify({product_id:parseInt(productId),message})}); if(res.ok){alert('✅ Interest expressed!'); loadDashboard();}else{alert('Error');} }
+        function logout(){localStorage.clear();window.location.href='/login';}
+        loadDashboard();
+    </script>
+</body>
+</html>

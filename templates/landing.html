@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="{{ lang(request) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('FarmGate.ug – Connect Farmers & Buyers') }}</title>
+    <meta name="description" content="{{ _('FarmGate.ug connects farmers directly with buyers in Uganda and internationally.') }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://farmgate.ug/">
+    <meta property="og:title" content="{{ _('FarmGate.ug – Connect Farmers & Buyers') }}">
+    <meta property="og:description" content="{{ _('Direct connections between farmers and buyers. No middlemen, free registration.') }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://farmgate.ug/">
+    <meta property="og:image" content="{{ settings.get('hero_background_image', 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=630&fit=crop') }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        .whatsapp-float { position: fixed; bottom: 30px; right: 30px; z-index: 999; background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 20px rgba(37,211,102,0.4); transition: all 0.3s; text-decoration: none; }
+        .whatsapp-float:hover { transform: scale(1.1); }
+        @media (max-width: 640px) { .whatsapp-float { width: 50px; height: 50px; font-size: 26px; bottom: 20px; right: 20px; } }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .hero-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+        .lang-select { background: #0a3322; color: white; border: 1px solid #5a9e42; border-radius: 9999px; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+        .lang-select:focus { outline: none; border-color: #a8d68c; }
+    </style>
+</head>
+<body class="bg-[#f0f8ec] text-gray-800">
+    <header class="bg-[#0a3322] text-white shadow-lg sticky top-0 z-50 border-b-4 border-[#5a9e42]">
+        <div class="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-tractor text-[#a8d68c] text-3xl"></i>
+                <span class="text-2xl font-extrabold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span></span>
+                <span class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+            </div>
+            <nav class="flex items-center gap-4 flex-wrap">
+                <a href="#about" class="nav-link text-sm font-medium">{{ _('About') }}</a>
+                <a href="#what-we-do" class="nav-link text-sm font-medium">{{ _('What We Do') }}</a>
+                <a href="#gallery" class="nav-link text-sm font-medium">{{ _('Gallery') }}</a>
+                <a href="/register" class="bg-[#5a9e42] text-white px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-[#4a8a35] transition">{{ _('Register') }}</a>
+                <a href="/login" class="border border-[#5a9e42] px-4 py-1.5 rounded-full text-sm font-semibold hover:bg-[#5a9e42] hover:text-white transition">{{ _('Login') }}</a>
+                <select onchange="window.location='/set-language/'+this.value" class="lang-select">
+                    <option value="en" {% if lang(request) == 'en' %}selected{% endif %}>English</option>
+                    <option value="lg" {% if lang(request) == 'lg' %}selected{% endif %}>Luganda</option>
+                </select>
+            </nav>
+        </div>
+    </header>
+
+    <section class="relative h-[600px] flex items-center justify-center overflow-hidden">
+        {% set hero_img = settings.get('hero_background_image', 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1600&h=800&fit=crop') %}
+        {% set hero_video = settings.get('hero_background_video', '') %}
+        {% if hero_video %}
+            <video class="hero-video" autoplay muted loop playsinline>
+                <source src="{{ hero_video }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% else %}
+            <div class="absolute inset-0" style="background-image: url('{{ hero_img }}'); background-size: cover; background-position: center;"></div>
+        {% endif %}
+        <div class="absolute inset-0 bg-black/50"></div>
+        <div class="container mx-auto px-4 text-center text-white relative z-10">
+            <h1 class="text-5xl md:text-7xl font-extrabold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span></h1>
+            <p class="text-xl md:text-2xl mt-4 max-w-2xl mx-auto font-light">{{ settings.get('hero_subtitle', _('Connect directly with farmers. No middlemen.')) }}</p>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <a href="/register" class="bg-[#5a9e42] text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-[#4a8a35] transition shadow-lg">{{ settings.get('hero_cta', _('Get Started – Free')) }}</a>
+                <a href="#about" class="border-2 border-white text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-white hover:text-[#0a3322] transition">{{ _('Learn More') }}</a>
+            </div>
+            <div class="mt-6 flex flex-wrap justify-center gap-6 text-sm">
+                <span><i class="fas fa-check-circle text-[#a8d68c]"></i> {{ _('Free Registration') }}</span>
+                <span><i class="fas fa-whatsapp text-green-400"></i> {{ _('WhatsApp Direct') }}</span>
+                <span><i class="fas fa-globe-africa text-blue-300"></i> {{ _('International Buyers') }}</span>
+            </div>
+            {% if settings.get('hero_video_embed') %}
+                <div class="mt-8 max-w-3xl mx-auto">
+                    <div class="video-container">{{ settings.get('hero_video_embed')|safe }}</div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-4 max-w-5xl">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-4xl font-bold text-[#0a3322] mb-4">{{ _('About FarmGate.ug') }}</h2>
+                    <div class="w-24 h-1 bg-[#5a9e42] mb-6"></div>
+                    <p class="text-lg text-gray-700 leading-relaxed">{{ settings.get('about_text', _("FarmGate.ug is Uganda's premier digital marketplace connecting farmers directly with buyers – from local traders to international factories.")) }}</p>
+                    {% if settings.get('about_video') %}
+                        <div class="mt-4 video-container">
+                            {{ settings.get('about_video')|safe }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div>
+                    {% set about_img = settings.get('about_image', 'https://images.unsplash.com/photo-1546443310-6a8a9f4c7a8e?w=600&h=400&fit=crop') %}
+                    <img src="{{ about_img }}" alt="{{ _('About FarmGate') }}" class="rounded-2xl shadow-lg w-full object-cover h-80">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="what-we-do" class="py-16 bg-[#f0f8ec]">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-[#0a3322] text-center mb-4">{{ _('What We Do') }}</h2>
+            <div class="w-24 h-1 bg-[#5a9e42] mx-auto mb-10"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {% for feature in features %}
+                <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition text-center">
+                    <div class="w-16 h-16 bg-[#0a3322] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="{{ feature.icon }} text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-[#0a3322]">{{ feature.title }}</h3>
+                    <p class="text-gray-600 mt-2">{{ feature.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-[#0a3322] text-center mb-4">{{ _('Gallery') }}</h2>
+            <div class="w-24 h-1 bg-[#5a9e42] mx-auto mb-10"></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for img in gallery %}
+                <div class="overflow-hidden rounded-xl shadow"><img src="{{ img.url }}" alt="{{ img.alt or _('Farm image') }}" class="w-full h-48 object-cover" /></div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16 bg-[#0a3322] text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold">{{ settings.get('cta_title', _('Ready to Connect?')) }}</h2>
+            <p class="text-lg mt-2 max-w-2xl mx-auto">{{ settings.get('cta_text', _('Join the fastest growing agricultural marketplace in Uganda.')) }}</p>
+            <div class="mt-6 flex flex-wrap justify-center gap-4">
+                <a href="/register" class="bg-[#5a9e42] text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-[#4a8a35] transition shadow-lg">{{ settings.get('cta_button_text', _('Register Now – Free')) }}</a>
+                <a href="https://wa.me/{{ whatsapp }}?text=Hello%20FarmGate.ug%2C%20I%20want%20to%20know%20more" target="_blank" class="bg-[#25d366] text-white px-8 py-3 rounded-full text-lg font-semibold hover:bg-[#1cb854] transition shadow-lg"><i class="fab fa-whatsapp"></i> {{ _('WhatsApp Us') }}</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-[#061f14] text-gray-300 py-10 border-t-4 border-[#5a9e42]">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <span class="text-2xl font-extrabold"><span class="text-red-500">Farm</span>Gate<span class="text-[#a8d68c]">.ug</span></span>
+                <p class="text-sm mt-2">{{ _('Connecting farmers & buyers directly.') }}</p>
+                <div class="flex gap-3 mt-4">
+                    <a href="{{ settings.get('footer_facebook', '#') }}" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ settings.get('footer_twitter', '#') }}" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                    <a href="{{ settings.get('footer_instagram', '#') }}" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                    <a href="https://wa.me/{{ whatsapp }}" target="_blank" class="text-gray-400 hover:text-white transition"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div><h4 class="text-white font-semibold mb-2">{{ _('Quick Links') }}</h4><ul class="space-y-1 text-sm"><li><a href="/" class="hover:text-white">{{ _('Home') }}</a></li><li><a href="/register" class="hover:text-white">{{ _('Register') }}</a></li><li><a href="/login" class="hover:text-white">{{ _('Login') }}</a></li></ul></div>
+            <div><h4 class="text-white font-semibold mb-2">{{ _('Contact') }}</h4><ul class="space-y-1 text-sm"><li><i class="fas fa-phone mr-2"></i> {{ settings.get('whatsapp_number', '+256771511410') }}</li><li><i class="fas fa-envelope mr-2"></i> info@farmgate.ug</li><li><i class="fas fa-map-marker-alt mr-2"></i> Kampala, Uganda</li></ul></div>
+            <div><h4 class="text-white font-semibold mb-2">{{ _('Hours') }}</h4><ul class="space-y-1 text-sm"><li>{{ _('Mon–Fri: 8am–6pm') }}</li><li>{{ _('Sat: 9am–2pm') }}</li><li>{{ _('Sun: Closed') }}</li></ul></div>
+        </div>
+        <div class="container mx-auto px-4 mt-8 pt-6 border-t border-gray-700 text-center text-xs text-gray-500">{{ settings.get('footer_copyright', _('© 2026 FarmGate.ug. All rights reserved.')) }}</div>
+    </footer>
+
+    <a href="https://wa.me/{{ whatsapp }}?text=Hello%20FarmGate.ug%2C%20I%20need%20assistance" target="_blank" class="whatsapp-float"><i class="fab fa-whatsapp"></i></a>
+</body>
+</html>
