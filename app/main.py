@@ -1,5 +1,5 @@
 ﻿from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Request
-from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
@@ -148,6 +148,9 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
     if user.sector:
         user_out.sector_name = user.sector.name
 
+    # Secure cookie: set to True only if running on Render (HTTPS)
+    secure_cookie = True if os.getenv("RENDER") else False
+
     response = JSONResponse(content={
         "access_token": access_token,
         "token_type": "bearer",
@@ -157,7 +160,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,   # Set to True in production (HTTPS)
+        secure=secure_cookie,   # True in production, False locally
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/"
@@ -737,12 +740,15 @@ async def admin_settings(request: Request, admin: User = Depends(get_current_adm
     settings = {s.key: s.value for s in db.query(SiteSetting).all()}
     return templates.TemplateResponse("admin_settings.html", {"request": request, "settings": settings})
 
+# ---------- LANGUAGE SWITCHER ----------
 @app.get("/set-language/{lang}")
 async def set_language(lang: str, request: Request):
     supported = ['en', 'lg']
     if lang not in supported:
         lang = 'en'
-    response = JSONResponse(content={"message": "Language set"})
+    # Redirect back to the previous page or home
+    referer = request.headers.get("referer") or "/"
+    response = RedirectResponse(url=referer, status_code=302)
     response.set_cookie(key="lang", value=lang, max_age=60*60*24*30, path="/")
     return response
 
