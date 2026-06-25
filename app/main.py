@@ -35,6 +35,12 @@ def startup():
     from app.database import engine
     from app.models import Base
     Base.metadata.create_all(bind=engine)
+# Defer table creation until first request
+@app.on_event("startup")
+def startup():
+    from app.database import engine
+    from app.models import Base
+    
 
 # Add i18n middleware
 app.add_middleware(I18nMiddleware)
@@ -793,6 +799,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "Internal Server Error. Please try again later."}
     )
+
 
 
 
